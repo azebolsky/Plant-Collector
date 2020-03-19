@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1>My Plants</h1>
+
+{% for plant in plants %}
+    <div class="card">
+        <a href="{% url 'detail' plant.id %}">
+            <div class="card-content">
+                <span class="card-title">{{ plant.name }}</span>
+                <p>Color: {{ plant.color }}</p>
+                <p>Description: {{ plant.description }}</p>
+                {% if plant.age > 1 %}
+                <p>Age: {{ plant.age }}</p>
+                {% else %}
+                <p>Age: New Plant!</p>
+                {% endif %}
+            </div>
+        </a>
+    </div>
+{% endfor %}
+
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1>Plant Details</h1>
+
+<div class="row">
+  <div class="col s6">
+    <div class="card">
+      <div class="card-content">
+        <span class="card-title">{{ plant.name }}</span>
+        <p>Color: {{ plant.color }}</p>
+        <p>Description: {{ plant.description }}</p>
+        {% if plant.age > 0 %}
+          <p>Age: {{ plant.age }}</p>
+        {% else %}
+          <p>Age: Tiny Plant</p>
+        {% endif %}
+      </div>
+      <div class="card-action">
+        <a href="{% url 'plants_update' plant.id %}">Edit</a>
+        <a href="{% url 'plants_delete' plant.id %}">Delete</a>
+      </div>
+    </div>
+  </div>
+  <div class="col s6">
+    <form action="{% url 'add_watering' plant.id %}" method="post">
+      {% csrf_token %}
+      {{ watering_form.as_p }}
+      <input type="submit" class="btn" value="Add Watering">
+    </form>
+    {% if plant.water_for_today %}
+      <div class="card-panel teal-text center-align">{{plant.name}} has been watered enough for today</div>
+    {% else %}
+      <div class="card-panel red-text center-align">{{plant.name}} might be thirsty</div>
+    {% endif %}
+    <table class="striped">
+      <thead>
+        <tr><th>Date</th><th>Time</th></tr>
+      </thead>
+      <tbody>
+        {% for watering in plant.watering_set.all %}
+          <tr>
+            <td>{{watering.date}}</td>
+            <td>{{watering.get_time_display}}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<hr>
+<div class="row">
+  <div class="col s6">
+    <h3>{{ plant.name }}'s Pots</h3>
+    {% if plant.pots.count %}
+      {% for pot in plant.pots.all %}
+        <div class="card">
+          <div class="card-content">
+            <span class="card-title">
+              A <span style="color: {{ pot.color }}">{{ pot.color }}</span> {{ pot.name }}
+            </span>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <h5>No Pots :(</h5>
+    {% endif %}
+  </div>
+</div>
+<div class="col s6">
+  <h3>Available Pots</h3>
+  {% if pots.count %}
+    {% for pot in pots.all %}
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">
+            A <span style="color: {{ pot.color }}">{{ pot.color }}</span> {{ pot.name }}
+          </span>
+        </div>
+        <div class="card-action">
+          <form action="{% url 'assoc_pot' plant.id pot.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn">Add</button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <h5>{{plant.name}} Already Has All Pots Available</h5>
+  {% endif %}
+</div>
+
+<script>
+  let dateEl = document.getElementById('id_date');
+  M.Datepicker.init(dateEl, {
+    format: 'yyyy-mm-dd',
+    defaultDate: new Date(),
+    setDefaultDate: true,
+    autoClose: true
+  });
+
+  let selectEl = document.getElementById('id_time');
+  M.FormSelect.init(selectEl);
+</script>
+{% endblock %}
