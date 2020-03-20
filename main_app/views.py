@@ -3,8 +3,11 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic import ListView, DetailView
 import uuid
 import boto3
-from .models import Plant, Pot, Watering
+from .models import Plant, Pot, Watering, Photo
 from .forms import WateringForm
+
+S3_BASE_URL = 'https://s3-us-west-1.amazonaws.com/'
+BUCKET = 'catcollector'
 
 # CBVs
 # CBV for creating, updating, deleting plants and viewing form to do so
@@ -50,6 +53,25 @@ def add_watering(request, plant_id):
         new_watering.plant_id = plant_id
         new_watering.save()
     return redirect('detail', plant_id=plant_id)
+
+def add_photo(request, plant_id):
+	# photo-file was the "name" attribute on the <input type="file">
+  photo_file = request.FILES.get('photo-file', None)
+  if photo_file:
+    s3 = boto3.client('s3')
+    # need a unique "key" for S3 / needs image file extension too
+    key = uuid.uuid4().hex[:6] + photo_file.name[photo_file.name.rfind('.'):]
+    # just in case something goes wrong
+    try:
+      s3.upload_fileobj(photo_file, BUCKET, key)
+      # build the full url string
+      url = f"{S3_BASE_URL}{BUCKET}/{key}"
+      # we can assign to plant_id or plant (if you have a plant object)
+      photo = Photo(url=url, plant_id=plant_id)
+      photo.save()
+    except:
+      print('An error occurred uploading file to S3')
+  return redirect('detail', plant_id=plant_id)
 
 def assoc_pot(request, plant_id, pot_id):
   # Note that you can pass a pot's id instead of the whole object
