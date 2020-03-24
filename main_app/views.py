@@ -18,7 +18,7 @@ BUCKET = 'catcollectorkitties'
 
 class PlantCreate(LoginRequiredMixin, CreateView):
     model = Plant
-    fields = '__all__'
+    fields = ['name', 'color', 'description', 'age']
     def form_valid(self, form):
         form.instance.user = self.request.user
         return super().form_valid(form)
